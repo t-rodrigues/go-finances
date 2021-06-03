@@ -17,7 +17,7 @@ export const Container = styled.View`
 `;
 
 export const Header = styled.View`
-  flex: 1;
+  height: ${RFPercentage(35)}px;
 
   background-color: ${({ theme }) => theme.colors.primary};
 `;
@@ -27,8 +27,8 @@ export const UserWrapper = styled.View`
   align-items: center;
   justify-content: space-between;
 
-  padding: 0 24px;
-  margin-top: ${getStatusBarHeight() + RFValue(10)}px;
+  padding: 24px;
+  /* margin-top: ${getStatusBarHeight()}px; */
 `;
 
 export const UserInfo = styled.View`
@@ -72,13 +72,11 @@ export const HighlightCards = styled.ScrollView.attrs({
   showsHorizontalScrollIndicator: false,
   contentContainerStyle: { paddingHorizontal: 24 },
 })`
-  margin-top: ${RFPercentage(16)}px;
-  width: 100%;
-  position: absolute;
+  margin-top: -${RFValue(130)}px;
+  max-height: ${RFValue(210)}px;
 `;
 
 export const Transactions = styled.View`
-  margin-top: ${RFValue(16)}px;
   flex: 1;
 
   padding: 0 24px;
@@ -88,8 +86,8 @@ export const Title = styled.Text`
   font-size: ${RFValue(24)}px;
   color: ${({ theme }) => theme.colors.title};
   font-family: ${({ theme }) => theme.fonts.regular};
-  margin-top: 20px;
-  margin-bottom: 10px;
+
+  padding: 20px 0;
 `;
 
 export const TransactionsList = styled(

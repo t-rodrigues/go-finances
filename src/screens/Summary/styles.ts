@@ -60,7 +60,7 @@ export const Month = styled.Text`
 `;
 
 export const NoData = styled.View`
-  /* margin-top: 60px; */
+  margin-top: 60px;
   flex: 1;
   align-items: center;
 `;

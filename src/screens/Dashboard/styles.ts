@@ -98,3 +98,9 @@ export const TransactionsList = styled(
     paddingBottom: getBottomSpace(),
   },
 })``;
+
+export const EmptyTransactionsList = styled.View``;
+
+export const EmptyTransactionsListText = styled.Text`
+  font-family: ${({ theme }) => theme.fonts.medium};
+`;

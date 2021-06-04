@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect } from '@react-navigation/core';
+import { useAuth } from '@/hooks/auth';
+import { storageConfig } from '@/config/storage';
 
 import HighlightCard from '@/components/HighlightCard';
+import Load from '@/components/Load';
 import TransactionCard, {
   TransactionCardProps,
 } from '@/components/TransactionCard';
@@ -23,8 +26,9 @@ import {
   Title,
   TransactionsList,
   LogOut,
+  EmptyTransactionsList,
+  EmptyTransactionsListText,
 } from './styles';
-import Load from '@/components/Load';
 
 export interface TransactionsProps extends TransactionCardProps {
   id: string;
@@ -45,11 +49,19 @@ function getLastTransactionDate(
   collection: TransactionsProps[],
   type: 'income' | 'outcome',
 ) {
+  const collectionFiltered = collection.filter(
+    transaction => transaction.type === type,
+  );
+
+  if (!collectionFiltered.length) {
+    return null;
+  }
+
   const lastTransaction = new Date(
     Math.max(
-      ...collection
-        .filter(transaction => transaction.type === type)
-        .map(transaction => new Date(transaction.date).getTime()),
+      ...collectionFiltered.map(transaction =>
+        new Date(transaction.date).getTime(),
+      ),
     ),
   ).toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -66,9 +78,12 @@ const Dashboard = (): JSX.Element => {
     null as unknown as HighlightData,
   );
 
+  const { user, signOff } = useAuth();
+  const dataKey = `${storageConfig.transactionsUserStorageKey + user.id}`;
+
   async function loadData() {
     setIsLoading(true);
-    const response = await AsyncStorage.getItem('@gofinances:transactions');
+    const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
     let entriesTotal = 0;
@@ -113,8 +128,18 @@ const Dashboard = (): JSX.Element => {
       'outcome',
     );
 
-    const totalInterval = `1 à ${lastTransactionExpensive}`;
+    const totalInterval = lastTransactionExpensive
+      ? `1 à ${lastTransactionExpensive}`
+      : null;
+
     const total = entriesTotal - expensiveTotal;
+
+    const lastTransactionEntrieDate = lastTransactionEntries
+      ? `Última entrada dia ${lastTransactionEntries}`
+      : 'Nenhuma transação de entrada registrada';
+    const lastTransactionExpensiveDate = lastTransactionExpensive
+      ? `Última saída dia ${lastTransactionEntries}`
+      : 'Nenhuma transação de saída registrada';
 
     setHighlightData({
       entries: {
@@ -122,26 +147,30 @@ const Dashboard = (): JSX.Element => {
           style: 'currency',
           currency: 'BRL',
         }),
-        date: `Última entrada dia ${lastTransactionEntries}`,
+        date: lastTransactionEntrieDate as string,
       },
       expensive: {
         amount: Number(expensiveTotal).toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
         }),
-        date: `Última saída dia ${lastTransactionEntries}`,
+        date: lastTransactionExpensiveDate as string,
       },
       total: {
         amount: Number(total).toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
         }),
-        date: totalInterval,
+        date: totalInterval as string,
       },
     });
 
     setIsLoading(false);
   }
+
+  const handleSignOff = async () => {
+    await signOff();
+  };
 
   useEffect(() => {
     loadData();
@@ -164,16 +193,16 @@ const Dashboard = (): JSX.Element => {
               <UserInfo>
                 <Photo
                   source={{
-                    uri: 'https://avatars.githubusercontent.com/u/34174188?v=4',
+                    uri: user.avatar,
                   }}
                 />
 
                 <User>
                   <UserGreetings>Olá,</UserGreetings>
-                  <UserName>Thiago</UserName>
+                  <UserName>{user.name}</UserName>
                 </User>
               </UserInfo>
-              <LogOut>
+              <LogOut onPress={handleSignOff}>
                 <LogOffIcon name="power" />
               </LogOut>
             </UserWrapper>
@@ -211,6 +240,13 @@ const Dashboard = (): JSX.Element => {
               data={transactions}
               renderItem={({ item }) => <TransactionCard data={item} />}
               keyExtractor={item => item.id}
+              ListEmptyComponent={() => (
+                <EmptyTransactionsList>
+                  <EmptyTransactionsListText>
+                    Nada para exibir aqui
+                  </EmptyTransactionsListText>
+                </EmptyTransactionsList>
+              )}
             />
           </Transactions>
         </>

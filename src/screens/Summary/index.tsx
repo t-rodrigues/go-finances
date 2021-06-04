@@ -5,13 +5,15 @@ import { RFValue } from 'react-native-responsive-fontsize';
 import { addMonths, subMonths, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import { useFocusEffect } from '@react-navigation/core';
 import { useTheme } from 'styled-components';
+import { useFocusEffect } from '@react-navigation/core';
+import { useAuth } from '@/hooks/auth';
 
 import HistoryCard from '@/components/HistoryCard';
 import { TransactionCardProps } from '@/components/TransactionCard';
 import Load from '@/components/Load';
 
+import { storageConfig } from '@/config/storage';
 import { categories } from '@/utils/categories';
 
 import {
@@ -48,6 +50,7 @@ const Summary = (): JSX.Element => {
   const [expensiveByCategory, setExpensiveByCategory] = useState<Expensive[]>(
     [],
   );
+  const { user } = useAuth();
 
   const theme = useTheme();
 
@@ -61,7 +64,8 @@ const Summary = (): JSX.Element => {
 
   async function loadData() {
     setIsLoading(true);
-    const dataKey = '@gofinances:transactions';
+    const dataKey = `${storageConfig.transactionsUserStorageKey + user.id}`;
+
     const response = await AsyncStorage.getItem(dataKey);
     const responseFormatted: TransactionData[] = response
       ? JSON.parse(response)
@@ -179,7 +183,7 @@ const Summary = (): JSX.Element => {
             </>
           ) : (
             <NoData>
-              <NoDataLabel>Sem itens para exibição</NoDataLabel>
+              <NoDataLabel>Sem itens para exibir</NoDataLabel>
             </NoData>
           )}
         </Content>

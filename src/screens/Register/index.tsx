@@ -3,8 +3,10 @@ import { Alert, Keyboard, Modal, TouchableWithoutFeedback } from 'react-native';
 import uuid from 'react-native-uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Yup from 'yup';
-import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+
+import { useForm } from 'react-hook-form';
+import { useNavigation } from '@react-navigation/core';
 
 import Button from '@/components/Form/Button';
 import CategorySelectInput from '@/components/Form/CategorySelectInput';
@@ -20,7 +22,7 @@ import {
   TransactionType,
 } from './styles';
 import CategorySelect from '../CategorySelect';
-import { useNavigation } from '@react-navigation/core';
+import { useAuth } from '@/hooks/auth';
 
 interface FormData {
   name: string;
@@ -38,7 +40,7 @@ const registerSchema = Yup.object().shape({
 const Register = (): JSX.Element => {
   const [transactionType, setTransactionType] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const dataKey = '@gofinances:transactions';
+  const { user } = useAuth();
 
   const [category, setCategory] = useState({
     key: 'category',
@@ -84,6 +86,7 @@ const Register = (): JSX.Element => {
     };
 
     try {
+      const dataKey = `@gofinances:transactions_user:${user.id}`;
       const data = await AsyncStorage.getItem(dataKey);
       const transactions = data ? JSON.parse(data) : [];
 

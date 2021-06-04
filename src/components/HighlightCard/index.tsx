@@ -37,7 +37,9 @@ const HighlightCard = ({
       </Header>
       <Content>
         <Amount type={type}>{amount}</Amount>
-        <LastTransaction type={type}>{lastTransaction}</LastTransaction>
+        {lastTransaction && (
+          <LastTransaction type={type}>{lastTransaction}</LastTransaction>
+        )}
       </Content>
     </Container>
   );

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import uuid from 'react-native-uuid';
 
 import { TransactionCardProps } from '@/components/TransactionCard';
 import { storageConfig } from '@/config';
@@ -20,6 +21,13 @@ type HighlightData = {
   total: HighlightProps;
 };
 
+type AddTransactionProps = {
+  name: string;
+  amount: string;
+  type: string;
+  category: string;
+};
+
 export const useTransactions = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -27,13 +35,11 @@ export const useTransactions = () => {
   const [highlightData, setHighlightData] = useState<HighlightData>(
     {} as HighlightData,
   );
+  const dataKey = `${storageConfig.transactionsUserStorageKey + user.id}`;
 
   const loadTransactionsData = async () => {
     setIsLoading(true);
-    const { transactionsUserStorageKey } = storageConfig;
-    const response = await AsyncStorage.getItem(
-      transactionsUserStorageKey + user.id,
-    );
+    const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
     let entriesTotal = 0;
@@ -144,11 +150,39 @@ export const useTransactions = () => {
     return lastTransaction;
   }
 
+  const addTransaction = async ({
+    name,
+    amount,
+    type,
+    category,
+  }: AddTransactionProps) => {
+    const newTransaction = {
+      id: uuid.v4(),
+      name,
+      amount,
+      type,
+      category,
+      date: new Date(),
+    };
+
+    try {
+      const data = await AsyncStorage.getItem(dataKey);
+      const transactions = data ? JSON.parse(data) : [];
+
+      const dataFormatted = [...transactions, newTransaction];
+
+      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
   return {
     getLastTransactionDate,
     loadTransactionsData,
     highlightData,
     transactions,
     isLoading,
+    addTransaction,
   };
 };

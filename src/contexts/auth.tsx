@@ -1,5 +1,4 @@
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { makeRedirectUri, startAsync } from 'expo-auth-session';
 
@@ -36,21 +35,20 @@ type UserStore = {
   token: string;
 };
 
-interface AuthContextData {
+type AuthContextData = {
   user: User;
   signInWithGoogle: () => Promise<void>;
   signOff: () => Promise<void>;
   userStorageLoading: boolean;
-}
+};
 
 const AuthContext = createContext({} as AuthContextData);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User>({} as User);
-  const [userToken, setUserToken] = useState('');
   const [userStorageLoading, setUserStorageLoading] = useState(true);
 
-  const { userStorageKey, transactionsUserStorageKey } = storageConfig;
+  const { userStorageKey } = storageConfig;
 
   const signInWithGoogle = async () => {
     setUserStorageLoading(true);
@@ -74,28 +72,22 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       })) as AuthorizationResponse;
 
       if (type === 'success') {
-        try {
-          const accessToken = params['access_token'];
+        const accessToken = params['access_token'];
+        api.defaults.headers.authorization = `Bearer ${accessToken}`;
 
-          setUserToken(accessToken);
-          api.defaults.headers.authorization = `Bearer ${accessToken}`;
+        const { data } = await api.get<UserResponse>('/userinfo');
+        const userData = {
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          avatar: data.picture,
+        };
 
-          const { data } = await api.get<UserResponse>('/userinfo');
-          const userData = {
-            id: data.id,
-            email: data.email,
-            name: data.name,
-            avatar: data.picture,
-          };
-
-          setUser(userData);
-          await AsyncStorage.setItem(
-            userStorageKey,
-            JSON.stringify({ user: userData, token: accessToken }),
-          );
-        } catch (error) {
-          Alert.alert('Error', JSON.stringify(error));
-        }
+        setUser(userData);
+        await AsyncStorage.setItem(
+          userStorageKey,
+          JSON.stringify({ user: userData, token: accessToken }),
+        );
       }
     } catch (error) {
       throw new Error(error);
@@ -108,14 +100,10 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     setUserStorageLoading(true);
 
     try {
-      await AsyncStorage.multiRemove([
-        userStorageKey,
-        `${transactionsUserStorageKey + user.id}`,
-      ]);
+      await AsyncStorage.removeItem(userStorageKey);
 
-      setUserToken('');
-      setUser({} as User);
       delete api.defaults.headers.authorization;
+      setUser({} as User);
     } catch (error) {
       throw new Error(error);
     } finally {
@@ -130,10 +118,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (response) {
         const { user, token } = JSON.parse(response) as UserStore;
-        console.log({ user, token });
+
         api.defaults.headers.authorization = `Bearer ${token}`;
         setUser(user);
-        setUserToken(token);
       }
     };
 

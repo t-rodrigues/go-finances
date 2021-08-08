@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { Alert, Keyboard, Modal, TouchableWithoutFeedback } from 'react-native';
-import uuid from 'react-native-uuid';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import { useForm } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/core';
+import { useTransactions } from '@/hooks';
 
 import Button from '@/components/Form/Button';
 import CategorySelectInput from '@/components/Form/CategorySelectInput';
 import InputForm from '@/components/Form/InputForm';
 import TransactionTypeButton from '@/components/Form/TransactionTypeButton';
+
+import CategorySelect from '../CategorySelect';
 
 import {
   Container,
@@ -21,8 +22,6 @@ import {
   Fields,
   TransactionType,
 } from './styles';
-import CategorySelect from '../CategorySelect';
-import { useAuth } from '@/hooks';
 
 interface FormData {
   name: string;
@@ -37,10 +36,10 @@ const registerSchema = Yup.object().shape({
     .required('Preço é obrigatório'),
 });
 
-const Register = (): JSX.Element => {
+const Register = () => {
+  const { addTransaction } = useTransactions();
   const [transactionType, setTransactionType] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const { user } = useAuth();
 
   const [category, setCategory] = useState({
     key: 'category',
@@ -76,35 +75,25 @@ const Register = (): JSX.Element => {
     if (category.key === 'category')
       return Alert.alert('Selecione uma categoria');
 
-    const newTransaction = {
-      id: uuid.v4(),
-      name,
-      amount,
-      type: transactionType,
-      category: category.key,
-      date: new Date(),
-    };
-
     try {
-      const dataKey = `@gofinances:transactions_user:${user.id}`;
-      const data = await AsyncStorage.getItem(dataKey);
-      const transactions = data ? JSON.parse(data) : [];
-
-      const dataFormatted = [...transactions, newTransaction];
-
-      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
+      await addTransaction({
+        name,
+        amount,
+        type: transactionType,
+        category: category.key,
+      });
 
       setCategory({
         key: 'category',
         name: 'Categoria',
         icon: '',
       });
+
       setTransactionType('');
       reset();
 
       navigate('Dashboard');
     } catch (error) {
-      console.error(error);
       Alert.alert('Não foi possível salvar');
     }
   };

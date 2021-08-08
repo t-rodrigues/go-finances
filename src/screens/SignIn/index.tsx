@@ -8,19 +8,12 @@ import Apple from '@/assets/apple.svg';
 
 import SignInSocialButton from '@/components/SignInSocialButton';
 import Load from '@/components/Load';
-import { useAuth } from '@/hooks/auth';
 
-import {
-  Container,
-  Header,
-  TitleWrapper,
-  Title,
-  Description,
-  Footer,
-  FooterWrapper,
-} from './styles';
+import { useAuth } from '@/hooks';
 
-const SignIn = (): JSX.Element => {
+import * as S from './styles';
+
+export const SignInScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signInWithGoogle } = useAuth();
 
@@ -28,27 +21,24 @@ const SignIn = (): JSX.Element => {
     setIsLoading(true);
 
     try {
-      return await signInWithGoogle();
+      await signInWithGoogle();
     } catch (error) {
-      console.error(error.message);
-
       Alert.alert('Errou!', error.message);
     }
-    setIsLoading(false);
   };
 
   return (
-    <Container>
-      <Header>
-        <TitleWrapper>
+    <S.Container>
+      <S.Header>
+        <S.TitleWrapper>
           <Logo width={RFValue(120)} height={RFValue(68)} />
-          <Title>Controle suas finanças de forma muito simples</Title>
-        </TitleWrapper>
+          <S.Title>Controle suas finanças de forma muito simples</S.Title>
+        </S.TitleWrapper>
 
-        <Description>Faça seu login com uma das contas abaixo</Description>
-      </Header>
-      <Footer>
-        <FooterWrapper>
+        <S.Description>Faça seu login com uma das contas abaixo</S.Description>
+      </S.Header>
+      <S.Footer>
+        <S.FooterWrapper>
           <SignInSocialButton
             onPress={handleSignInWithGoogle}
             title="Google"
@@ -58,12 +48,10 @@ const SignIn = (): JSX.Element => {
           {Platform.OS === 'ios' && (
             <SignInSocialButton title="Apple" svg={Apple} />
           )}
-        </FooterWrapper>
+        </S.FooterWrapper>
 
         {isLoading && <Load size="large" />}
-      </Footer>
-    </Container>
+      </S.Footer>
+    </S.Container>
   );
 };
-
-export default SignIn;

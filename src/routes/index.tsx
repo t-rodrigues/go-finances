@@ -1,12 +1,11 @@
 import React from 'react';
-
 import { NavigationContainer } from '@react-navigation/native';
 
-import AppRoutes from './AppRoutes';
-import AuthRoutes from './AuthRoutes';
-import { useAuth } from '@/hooks/auth';
+import { useAuth } from '@/hooks';
+import { AuthRoutes } from '@/routes/AuthRoutes';
+import { AppRoutes } from '@/routes/AppRoutes';
 
-export const Routes = (): JSX.Element => {
+export const Routes = () => {
   const { user } = useAuth();
 
   return (

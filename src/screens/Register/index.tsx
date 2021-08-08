@@ -22,7 +22,7 @@ import {
   TransactionType,
 } from './styles';
 import CategorySelect from '../CategorySelect';
-import { useAuth } from '@/hooks/auth';
+import { useAuth } from '@/hooks';
 
 interface FormData {
   name: string;
@@ -57,7 +57,7 @@ const Register = (): JSX.Element => {
     resolver: yupResolver(registerSchema),
   });
 
-  const navigation = useNavigation();
+  const { navigate } = useNavigation();
 
   const handleTransactionTypeSelect = (type: 'income' | 'outcome') => {
     setTransactionType(type);
@@ -102,7 +102,7 @@ const Register = (): JSX.Element => {
       setTransactionType('');
       reset();
 
-      navigation.navigate('Dashboard');
+      navigate('Dashboard');
     } catch (error) {
       console.error(error);
       Alert.alert('Não foi possível salvar');

@@ -1,9 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import React, { useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/core';
-import { useAuth } from '@/hooks/auth';
-import { storageConfig } from '@/config/storage';
+
+import { useAuth, useTransactions } from '@/hooks';
 
 import HighlightCard from '@/components/HighlightCard';
 import Load from '@/components/Load';
@@ -11,205 +9,60 @@ import TransactionCard, {
   TransactionCardProps,
 } from '@/components/TransactionCard';
 
-import {
-  Container,
-  Header,
-  UserWrapper,
-  UserInfo,
-  Photo,
-  User,
-  UserGreetings,
-  UserName,
-  LogOffIcon,
-  HighlightCards,
-  Transactions,
-  Title,
-  TransactionsList,
-  LogOut,
-  EmptyTransactionsList,
-  EmptyTransactionsListText,
-} from './styles';
+import * as S from './styles';
 
-export interface TransactionsProps extends TransactionCardProps {
+export type TransactionsProps = TransactionCardProps & {
   id: string;
-}
-
-type HighlightProps = {
-  amount: string;
-  date: string;
 };
 
-type HighlightData = {
-  entries: HighlightProps;
-  expensive: HighlightProps;
-  total: HighlightProps;
-};
-
-function getLastTransactionDate(
-  collection: TransactionsProps[],
-  type: 'income' | 'outcome',
-) {
-  const collectionFiltered = collection.filter(
-    transaction => transaction.type === type,
-  );
-
-  if (!collectionFiltered.length) {
-    return null;
-  }
-
-  const lastTransaction = new Date(
-    Math.max(
-      ...collectionFiltered.map(transaction =>
-        new Date(transaction.date).getTime(),
-      ),
-    ),
-  ).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-  });
-
-  return lastTransaction;
-}
-
-const Dashboard = (): JSX.Element => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [transactions, setTransactions] = useState<TransactionsProps[]>([]);
-  const [highlightData, setHighlightData] = useState<HighlightData>(
-    null as unknown as HighlightData,
-  );
+const Dashboard = () => {
+  const { isLoading, transactions, highlightData, loadTransactionsData } =
+    useTransactions();
 
   const { user, signOff } = useAuth();
-  const dataKey = `${storageConfig.transactionsUserStorageKey + user.id}`;
-
-  async function loadData() {
-    setIsLoading(true);
-    const response = await AsyncStorage.getItem(dataKey);
-    const transactions = response ? JSON.parse(response) : [];
-
-    let entriesTotal = 0;
-    let expensiveTotal = 0;
-
-    const transactionsFormatted: TransactionsProps[] = transactions.map(
-      (item: TransactionsProps) => {
-        const amount = Number(item.amount).toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-
-        const date = Intl.DateTimeFormat('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-        }).format(new Date(item.date));
-
-        if (item.type === 'income') {
-          entriesTotal += Number(item.amount);
-        } else {
-          expensiveTotal += Number(item.amount);
-        }
-
-        return {
-          ...item,
-          amount,
-          date,
-        };
-      },
-    );
-
-    setTransactions(transactionsFormatted);
-
-    const lastTransactionEntries = getLastTransactionDate(
-      transactions,
-      'income',
-    );
-
-    const lastTransactionExpensive = getLastTransactionDate(
-      transactions,
-      'outcome',
-    );
-
-    const totalInterval = lastTransactionExpensive
-      ? `1 à ${lastTransactionExpensive}`
-      : null;
-
-    const total = entriesTotal - expensiveTotal;
-
-    const lastTransactionEntrieDate = lastTransactionEntries
-      ? `Última entrada dia ${lastTransactionEntries}`
-      : 'Nenhuma transação de entrada registrada';
-    const lastTransactionExpensiveDate = lastTransactionExpensive
-      ? `Última saída dia ${lastTransactionEntries}`
-      : 'Nenhuma transação de saída registrada';
-
-    setHighlightData({
-      entries: {
-        amount: Number(entriesTotal).toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        }),
-        date: lastTransactionEntrieDate as string,
-      },
-      expensive: {
-        amount: Number(expensiveTotal).toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        }),
-        date: lastTransactionExpensiveDate as string,
-      },
-      total: {
-        amount: Number(total).toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        }),
-        date: totalInterval as string,
-      },
-    });
-
-    setIsLoading(false);
-  }
 
   const handleSignOff = async () => {
     await signOff();
   };
 
   useEffect(() => {
-    loadData();
+    loadTransactionsData();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      loadData();
+      loadTransactionsData();
     }, []),
   );
 
   return (
-    <Container>
+    <S.Container>
       {isLoading ? (
         <Load size="large" />
       ) : (
         <>
-          <Header>
-            <UserWrapper>
-              <UserInfo>
-                <Photo
+          <S.Header>
+            <S.UserWrapper>
+              <S.UserInfo>
+                <S.Photo
                   source={{
                     uri: user.avatar,
                   }}
                 />
 
-                <User>
-                  <UserGreetings>Olá,</UserGreetings>
-                  <UserName>{user.name}</UserName>
-                </User>
-              </UserInfo>
-              <LogOut onPress={handleSignOff}>
-                <LogOffIcon name="power" />
-              </LogOut>
-            </UserWrapper>
-          </Header>
+                <S.User>
+                  <S.UserGreetings>Olá,</S.UserGreetings>
+                  <S.UserName>{user.name}</S.UserName>
+                </S.User>
+              </S.UserInfo>
+              <S.LogOut onPress={handleSignOff}>
+                <S.LogOffIcon name="power" />
+              </S.LogOut>
+            </S.UserWrapper>
+          </S.Header>
 
           {highlightData && (
-            <HighlightCards>
+            <S.HighlightCards>
               <HighlightCard
                 type="income"
                 title="Entradas"
@@ -230,28 +83,28 @@ const Dashboard = (): JSX.Element => {
                 amount={highlightData.total.amount}
                 lastTransaction={highlightData.total.date}
               />
-            </HighlightCards>
+            </S.HighlightCards>
           )}
 
-          <Transactions>
-            <Title>Listagem</Title>
+          <S.Transactions>
+            <S.Title>Listagem</S.Title>
 
-            <TransactionsList
+            <S.TransactionsList
               data={transactions}
               renderItem={({ item }) => <TransactionCard data={item} />}
               keyExtractor={item => item.id}
               ListEmptyComponent={() => (
-                <EmptyTransactionsList>
-                  <EmptyTransactionsListText>
+                <S.EmptyTransactionsList>
+                  <S.EmptyTransactionsListText>
                     Nada para exibir aqui
-                  </EmptyTransactionsListText>
-                </EmptyTransactionsList>
+                  </S.EmptyTransactionsListText>
+                </S.EmptyTransactionsList>
               )}
             />
-          </Transactions>
+          </S.Transactions>
         </>
       )}
-    </Container>
+    </S.Container>
   );
 };
 

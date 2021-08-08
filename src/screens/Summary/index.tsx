@@ -7,7 +7,7 @@ import { ptBR } from 'date-fns/locale';
 
 import { useTheme } from 'styled-components';
 import { useFocusEffect } from '@react-navigation/core';
-import { useAuth } from '@/hooks/auth';
+import { useAuth } from '@/hooks';
 
 import HistoryCard from '@/components/HistoryCard';
 import { TransactionCardProps } from '@/components/TransactionCard';
@@ -16,19 +16,7 @@ import Load from '@/components/Load';
 import { storageConfig } from '@/config/storage';
 import { categories } from '@/utils/categories';
 
-import {
-  Container,
-  Header,
-  Title,
-  Content,
-  Chart,
-  MonthSelect,
-  MonthSelectButton,
-  SelectIcon,
-  Month,
-  NoData,
-  NoDataLabel,
-} from './styles';
+import * as S from './styles';
 
 type Expensive = {
   key: string;
@@ -44,7 +32,7 @@ interface TransactionData extends TransactionCardProps {
   total: number;
 }
 
-const Summary = (): JSX.Element => {
+const Summary = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [expensiveByCategory, setExpensiveByCategory] = useState<Expensive[]>(
@@ -126,34 +114,34 @@ const Summary = (): JSX.Element => {
   );
 
   return (
-    <Container>
-      <Header>
-        <Title>Resumo</Title>
-      </Header>
+    <S.Container>
+      <S.Header>
+        <S.Title>Resumo</S.Title>
+      </S.Header>
 
       {isLoading ? (
         <Load size="large" />
       ) : (
-        <Content>
-          <MonthSelect>
-            <MonthSelectButton onPress={() => handleDateChange('prev')}>
-              <SelectIcon name="chevron-left" />
-            </MonthSelectButton>
+        <S.Content>
+          <S.MonthSelect>
+            <S.MonthSelectButton onPress={() => handleDateChange('prev')}>
+              <S.SelectIcon name="chevron-left" />
+            </S.MonthSelectButton>
 
-            <Month>
+            <S.Month>
               {format(selectedDate, 'MMM, yyyy', {
                 locale: ptBR,
               })}
-            </Month>
+            </S.Month>
 
-            <MonthSelectButton onPress={() => handleDateChange('next')}>
-              <SelectIcon name="chevron-right" />
-            </MonthSelectButton>
-          </MonthSelect>
+            <S.MonthSelectButton onPress={() => handleDateChange('next')}>
+              <S.SelectIcon name="chevron-right" />
+            </S.MonthSelectButton>
+          </S.MonthSelect>
 
           {expensiveByCategory.length ? (
             <>
-              <Chart>
+              <S.Chart>
                 <VictoryPie
                   data={expensiveByCategory}
                   colorScale={expensiveByCategory.map(
@@ -170,7 +158,7 @@ const Summary = (): JSX.Element => {
                   x="percentFormatted"
                   y="total"
                 />
-              </Chart>
+              </S.Chart>
 
               {expensiveByCategory.map(expensive => (
                 <HistoryCard
@@ -182,13 +170,13 @@ const Summary = (): JSX.Element => {
               ))}
             </>
           ) : (
-            <NoData>
-              <NoDataLabel>Sem itens para exibir</NoDataLabel>
-            </NoData>
+            <S.NoData>
+              <S.NoDataLabel>Sem itens para exibir</S.NoDataLabel>
+            </S.NoData>
           )}
-        </Content>
+        </S.Content>
       )}
-    </Container>
+    </S.Container>
   );
 };
 

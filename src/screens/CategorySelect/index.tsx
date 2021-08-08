@@ -4,17 +4,7 @@ import { categories } from '@/utils/categories';
 
 import Button from '@/components/Form/Button';
 
-import {
-  Container,
-  Header,
-  Title,
-  CategoriesList,
-  Category,
-  Icon,
-  Name,
-  Separator,
-  Footer,
-} from './styles';
+import * as S from './styles';
 
 export type Category = {
   key: string;
@@ -38,32 +28,32 @@ const CategorySelect = ({
   };
 
   return (
-    <Container>
-      <Header>
-        <Title>Categoria</Title>
-      </Header>
+    <S.Container>
+      <S.Header>
+        <S.Title>Categoria</S.Title>
+      </S.Header>
 
-      <CategoriesList
+      <S.CategoriesList
         data={categories}
         renderItem={({ item }) => (
-          <Category
+          <S.Category
             onPress={() => handleCategorySelect(item)}
             isActive={category.key === item.key}
           >
-            <Icon name={item.icon} />
-            <Name>{item.name}</Name>
-          </Category>
+            <S.Icon name={item.icon} />
+            <S.Name>{item.name}</S.Name>
+          </S.Category>
         )}
         keyExtractor={item => item.key}
-        ItemSeparatorComponent={() => <Separator />}
+        ItemSeparatorComponent={() => <S.Separator />}
       />
 
-      <Footer>
+      <S.Footer>
         <Button activeOpacity={0.7} onPress={closeSelectCategory}>
           Selecionar
         </Button>
-      </Footer>
-    </Container>
+      </S.Footer>
+    </S.Container>
   );
 };
 

@@ -6,7 +6,7 @@ import { addMonths, subMonths, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { useTheme } from 'styled-components';
-import { useFocusEffect } from '@react-navigation/core';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/hooks';
 
 import HistoryCard from '@/components/HistoryCard';

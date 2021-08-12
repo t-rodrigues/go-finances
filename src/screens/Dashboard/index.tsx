@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/core';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { useAuth, useTransactions } from '@/hooks';
 

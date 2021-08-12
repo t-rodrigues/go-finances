@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import { useForm } from 'react-hook-form';
-import { useNavigation } from '@react-navigation/core';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useTransactions } from '@/hooks';
 
 import Button from '@/components/Form/Button';
@@ -14,14 +14,7 @@ import TransactionTypeButton from '@/components/Form/TransactionTypeButton';
 
 import CategorySelect from '../CategorySelect';
 
-import {
-  Container,
-  Header,
-  Title,
-  Form,
-  Fields,
-  TransactionType,
-} from './styles';
+import * as S from './styles';
 
 interface FormData {
   name: string;
@@ -56,7 +49,7 @@ const Register = () => {
     resolver: yupResolver(registerSchema),
   });
 
-  const { navigate } = useNavigation();
+  const { navigate } = useNavigation<NavigationProp<any>>();
 
   const handleTransactionTypeSelect = (type: 'income' | 'outcome') => {
     setTransactionType(type);
@@ -100,13 +93,13 @@ const Register = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Container>
-        <Header>
-          <Title>Cadastro</Title>
-        </Header>
+      <S.Container>
+        <S.Header>
+          <S.Title>Cadastro</S.Title>
+        </S.Header>
 
-        <Form>
-          <Fields>
+        <S.Form>
+          <S.Fields>
             <InputForm
               name="name"
               control={control}
@@ -123,7 +116,7 @@ const Register = () => {
               error={errors.amount && errors.amount.message}
             />
 
-            <TransactionType>
+            <S.TransactionType>
               <TransactionTypeButton
                 type="income"
                 onPress={() => handleTransactionTypeSelect('income')}
@@ -139,25 +132,26 @@ const Register = () => {
               >
                 Saída
               </TransactionTypeButton>
-            </TransactionType>
+            </S.TransactionType>
 
             <CategorySelectInput
+              testID="button-category"
               title={category.name}
               onPress={handleOpenSelectCategoryModal}
             />
-          </Fields>
+          </S.Fields>
 
           <Button onPress={handleSubmit(handleRegister)}>Enviar</Button>
-        </Form>
+        </S.Form>
 
-        <Modal visible={categoryModalOpen}>
+        <Modal testID="modal-category" visible={categoryModalOpen}>
           <CategorySelect
             category={category}
             setCategory={setCategory}
             closeSelectCategory={handleCloseSelectCategoryModal}
           />
         </Modal>
-      </Container>
+      </S.Container>
     </TouchableWithoutFeedback>
   );
 };

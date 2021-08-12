@@ -13,7 +13,7 @@ type AuthorizationResponse = {
   params: {
     access_token: string;
   };
-  type: string;
+  type: 'cancel' | 'dismiss' | 'success';
 };
 
 type UserResponse = {
@@ -45,7 +45,12 @@ type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User>({} as User);
+  const [user, setUser] = useState<User>({
+    id: '',
+    name: '',
+    email: '',
+    avatar: '',
+  });
   const [userStorageLoading, setUserStorageLoading] = useState(true);
 
   const { userStorageKey } = storageConfig;

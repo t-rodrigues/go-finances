@@ -1,8 +1,10 @@
 import React from 'react';
 import { ThemeProvider } from 'styled-components/native';
 
+import { AuthProvider } from './auth';
+import { StorageProvider } from './store';
+
 import { theme } from '@/global/styles/theme';
-import { AuthProvider } from '@/contexts/auth';
 
 type Props = {
   children: React.ReactNode;
@@ -11,7 +13,9 @@ type Props = {
 export function AppProvider({ children }: Props) {
   return (
     <ThemeProvider theme={theme}>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        <StorageProvider>{children}</StorageProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

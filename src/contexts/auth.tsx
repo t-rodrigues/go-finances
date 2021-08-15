@@ -1,12 +1,12 @@
-import React, { createContext, ReactNode, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useEffect, useState } from 'react';
 import { makeRedirectUri, startAsync } from 'expo-auth-session';
 
 import { storageConfig } from '@/config';
+import { useStorage } from '@/hooks';
 import { api } from '@/services/api';
 
 interface AuthProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 type AuthorizationResponse = {
@@ -45,13 +45,9 @@ type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User>({
-    id: '',
-    name: '',
-    email: '',
-    avatar: '',
-  });
+  const [user, setUser] = useState<User>({} as User);
   const [userStorageLoading, setUserStorageLoading] = useState(true);
+  const { setItem, getItem, removeItem } = useStorage();
 
   const { userStorageKey } = storageConfig;
 
@@ -89,10 +85,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         };
 
         setUser(userData);
-        await AsyncStorage.setItem(
-          userStorageKey,
-          JSON.stringify({ user: userData, token: accessToken }),
-        );
+        await setItem(userStorageKey, userData);
       }
     } catch (error) {
       throw new Error(error);
@@ -105,7 +98,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     setUserStorageLoading(true);
 
     try {
-      await AsyncStorage.removeItem(userStorageKey);
+      await removeItem(userStorageKey);
 
       delete api.defaults.headers.authorization;
       setUser({} as User);
@@ -118,8 +111,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     const loadUser = async () => {
-      const { userStorageKey } = storageConfig;
-      const response = await AsyncStorage.getItem(userStorageKey);
+      const response = await getItem(userStorageKey);
 
       if (response) {
         const { user, token } = JSON.parse(response) as UserStore;

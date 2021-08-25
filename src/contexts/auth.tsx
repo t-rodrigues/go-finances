@@ -85,7 +85,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         };
 
         setUser(userData);
-        await setItem(userStorageKey, userData);
+        await setItem(userStorageKey, { user: userData, token: accessToken });
       }
     } catch (error) {
       throw new Error(error);
@@ -114,10 +114,10 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       const response = await getItem(userStorageKey);
 
       if (response) {
-        const { user, token } = JSON.parse(response) as UserStore;
+        const { user: userData, token } = JSON.parse(response) as UserStore;
 
         api.defaults.headers.authorization = `Bearer ${token}`;
-        setUser(user);
+        setUser(userData);
       }
     };
 
